@@ -15,13 +15,27 @@ title: Timeout
 Timeout<Object> timeout = Timeout.of(Duration.ofSeconds(10));
 ```
 
-You can also cancel an execution and perform an optional [interrupt] if it times out:
+You can also [interrupt] an execution if it times out:
 
 ```java
-timeout.withCancel(shouldInterrupt);
+timeout.withInterrupt(true);
 ```
 
-If a cancellation is triggered by a `Timeout`, the execution is still completed with `TimeoutExceededException`. See the [execution cancellation][execution-cancellation] section for more on cancellation.
+If a cancellation is triggered by a `Timeout`, the execution is completed with `TimeoutExceededException`. See the [execution cancellation][execution-cancellation] section for more on cancellation.
+
+## Timeouts with Retries
+
+When a `Timeout` is [composed][policy-composition] _outside_ a `RetryPolicy`, a timeout occurrence will cancel any _inner_ retries:
+
+```java
+Failsafe.with(timeout, retryPolicy).run(this::connect);
+```
+
+When a `Timeout` is [composed][policy-composition] _inside_ a `RetryPolicy`, a timeout occurrence will not automically cancel any _outer_ retries:
+
+```java
+Failsafe.with(retryPolicy, timeout).run(this::connect);
+```
 
 ## Event Listeners
 
